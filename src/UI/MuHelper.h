@@ -54,14 +54,18 @@ private:
     void RunHunting();
     void RunPicking();
     void RunPopup();
+    bool Hit(int x, int y, int w, int h);
     bool Button(int x, int y, int w, int h, const char* label, bool active = false);
+    bool Arrow(int x, int y, bool up);
     void Check(int x, int y, const char* label, BYTE* flag);
-    void Stepper(int x, int y, const char* label, BYTE* value);
-    void DelayStepper(int x, int y, WORD* value);
-    void SkillSlot(int x, int y, int w, BYTE* skill);
+    void Range(int y, BYTE* value);
+    void Delay(int x, int y, BYTE* enabled, WORD* value);
+    void SkillSlot(int x, int y, BYTE* skill);
+    void Section(int y, int h);
 
     MUHELPER_CONFIG m_Config = {};
     BYTE* m_PopupTarget = nullptr;
+    WORD* m_DelayFocus = nullptr;
     int m_PopupX = 0;
     int m_PopupY = 0;
     int m_Tab = 0;
