@@ -145,10 +145,6 @@ void CMuHelper::ReceiveState(const BYTE* packet, int size)
 {
     if (size != 6) return;
     const bool active = packet[4] != 0;
-    if (active && !m_Active && Hero) {
-        m_AnchorX = AsCharacter(Hero)->PositionX;
-        m_AnchorY = AsCharacter(Hero)->PositionY;
-    }
     m_Active = active;
     if (!active) { ReleaseAttack(); m_Manual = false; }
     char line[64];
@@ -218,8 +214,6 @@ void CMuHelper::UpdateManual()
     }
     if (m_Manual && !AsCharacter(Hero)->Movement && now - m_ManualTick >= ManualGraceMs) {
         m_Manual = false;
-        m_AnchorX = AsCharacter(Hero)->PositionX;
-        m_AnchorY = AsCharacter(Hero)->PositionY;
         SendManual(false);
     }
 }
@@ -260,10 +254,8 @@ void CMuHelper::RenderWorld()
     const float radius = (float)(picking ? m_Config.PickRange : m_Config.HuntingRange) * 100.0f;
     if (radius <= 0.0f) return;
     const CHARACTER* hero = AsCharacter(Hero);
-    // Com "Retornar posição original" o círculo fica no ponto do Play; sem ela, acompanha o personagem.
-    const bool fixedCenter = m_Active && m_Config.ReturnToOriginalPos && !m_Manual;
-    const float cx = (float)(fixedCenter ? m_AnchorX : hero->PositionX) * 100.0f + 50.0f;
-    const float cy = (float)(fixedCenter ? m_AnchorY : hero->PositionY) * 100.0f + 50.0f;
+    const float cx = (float)hero->PositionX * 100.0f + 50.0f;
+    const float cy = (float)hero->PositionY * 100.0f + 50.0f;
 
     EnableAlphaTest(true);
     GL_SetAlphaTest('\0');

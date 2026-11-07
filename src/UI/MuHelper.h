@@ -77,8 +77,6 @@ private:
     int m_PopupX = 0;
     int m_PopupY = 0;
     int m_Tab = 0;
-    int m_AnchorX = 0;
-    int m_AnchorY = 0;
     WORD m_AttackKey = 0xFFFF;
     BYTE m_AttackSkill = 0;
     char m_SavedAutoAttack = 1;
