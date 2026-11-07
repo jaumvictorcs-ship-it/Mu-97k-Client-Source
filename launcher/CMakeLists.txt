@@ -15,7 +15,7 @@ target_compile_options(launcher_core PUBLIC /W4 /utf-8)
 target_link_libraries(launcher_core PUBLIC winhttp bcrypt)
 
 add_executable(Launcher WIN32 Launcher.cpp Launcher.rc)
-target_link_libraries(Launcher PRIVATE launcher_core comctl32)
+target_link_libraries(Launcher PRIVATE launcher_core comctl32 msimg32 windowscodecs ole32)
 set_target_properties(Launcher PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 # O manifest vai pelo .rc; o linker nao gera outro.
 target_link_options(Launcher PRIVATE /MANIFEST:NO)

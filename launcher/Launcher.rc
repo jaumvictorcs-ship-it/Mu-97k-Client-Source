@@ -1,4 +1,6 @@
-// Icone (o mesmo do main.exe) e manifest com Common Controls v6 e asInvoker.
+// Icone (o mesmo do main.exe), arte do Launcher (art/make_art.py) e manifest com Common Controls v6 e asInvoker.
 #include <winres.h>
 1 ICON "../src/icon.ico"
+101 RCDATA "art/launcher_bg.png"
+102 RCDATA "art/launcher_buttons.png"
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "Launcher.manifest"
