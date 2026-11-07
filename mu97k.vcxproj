@@ -165,6 +165,7 @@
     <ClInclude Include="src\Render\Camera3D.h" />
     <ClInclude Include="src\UI\OptionsMenu.h" />
     <ClInclude Include="src\UI\MoveList.h" />
+    <ClInclude Include="src\UI\MuHelper.h" />
     <ClInclude Include="src\Sound\SoundManager.h" />
     <ClInclude Include="src\Game\MapManager.h" />
     <ClInclude Include="src\Game\HeroVitals.h" />
@@ -519,6 +520,7 @@
     <ClCompile Include="src\Render\Camera3D.cpp" />
     <ClCompile Include="src\UI\OptionsMenu.cpp" />
     <ClCompile Include="src\UI\MoveList.cpp" />
+    <ClCompile Include="src\UI\MuHelper.cpp" />
     <ClCompile Include="src\UI\Chat_InputTick.cpp" />
     <ClCompile Include="src\UI\Chat_Send.cpp" />
     <ClCompile Include="src\UI\UI_SkillHotkeys.cpp" />

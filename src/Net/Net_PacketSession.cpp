@@ -8,6 +8,7 @@
 #include "UI/MiniMap.h"
 #include "UI/EventTimer.h"
 #include "UI/MoveList.h"
+#include "UI/MuHelper.h"
 
 
 // IDA: ClearInventory (0x004CBDF0).  El nombre viejo del port
@@ -71,6 +72,7 @@ void UpdateWindowsMouse(void)
   gMiniMap.UpdateMouse();
   // DESVIACION (DLL Interface.cpp): captura el mouse del menú M.
   gMoveList.UpdateMouse();
+  gMuHelper.UpdateMouse();
   if (DAT_083a7c24 == 0x6e) {
     return;
   }

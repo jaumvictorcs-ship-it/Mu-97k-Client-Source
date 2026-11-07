@@ -18,6 +18,7 @@
 #include "Net/Reconnect.h"
 #include "UI/MiniMap.h"
 #include "UI/MoveList.h"
+#include "UI/MuHelper.h"
 #include "Game/MapManager.h"
 #include "globals.h"
 #include "functions.h"
@@ -59,6 +60,7 @@ void __cdecl RenderInformation(void) {
     RenderHelpWindow(); // RenderHelpWindow / item info
     // DESVIACION (DLL Interface.cpp, hook 0x00525CEC): mapa (Tab) y menú M.
     gMiniMap.Render();
+    gMuHelper.Render();
     gMoveList.Render();
     Cursor_Render(); // RenderCursor
     RenderInfomation3D(); // RenderInfomation3D

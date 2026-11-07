@@ -7,6 +7,7 @@
 #include "UI/MiniMap.h"
 #include "UI/EventTimer.h"
 #include "UI/MoveList.h"
+#include "UI/MuHelper.h"
 #include "globals.h"
 #include "functions.h"
 #include "Net/Net.h"
@@ -444,6 +445,8 @@ static void HUD_HotkeyTick(void)
     if (GuildInputEnable != '\0') return;  // g_ChatMode
     if (DAT_00559c84 != '\0') return;  // g_TextMode (login / dialog text)
     if (DAT_07e11d71 != '\0') return;  // g_IME_Mode
+    // Mu Helper: com o campo de texto em foco, as teclas n„o acionam atalhos.
+    if (gMuHelper.UpdateTextInput()) return;
     // IDA Chat_InputTick L3976-3985: ANTES de mirar cualquier hotkey de panel,
     // el original corta la funcion entera con esta lista:
     //
@@ -478,6 +481,10 @@ static void HUD_HotkeyTick(void)
     if (PressKey('H')) gEventTimer.Toggle();
     // DESVIACION (DLL Controller.cpp): men√∫ M con destinos recibidos del server.
     if (PressKey('M')) gMoveList.Toggle();
+    // Mu Helper: Z ou Home abrem a janela. As duas leituras precisam acontecer (PressKey detecta por flanco).
+    const int kHelperZ = PressKey('Z');
+    const int kHelperHome = PressKey(VK_HOME);
+    if (kHelperZ || kHelperHome) gMuHelper.Toggle();
     // DESVIACION (DLL Controller.cpp): Tab abre el mapa.
     if (PressKey(VK_TAB)) gMiniMap.Toggle();
     if (PressKey(VK_SPACE)) HUD_PickUpNearestItem();

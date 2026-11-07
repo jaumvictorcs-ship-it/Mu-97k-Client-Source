@@ -15,6 +15,7 @@
 #include "Net/ServerCharacterStats.h"
 #include "UI/HealthBar.h"
 #include "UI/MoveList.h"
+#include "UI/MuHelper.h"
 #include "UI/EventTimer.h"
 #include "UI/GoldenArcher.h"
 #include "Item/ChaosMixRates.h"
@@ -34,6 +35,7 @@ void CNetwork::ResetCharacterData()
     GoldenArcher_ResetCharacter();
     // DSProtocol::DGCharacterInfoRecv reenvía M y las tablas para el personaje.
     gMoveList.Clear();
+    gMuHelper.Clear();
     ItemServerValue_ResetSession();
     gEventTimer.Close(); // El calendario pertenece a la misma conexión.
 }

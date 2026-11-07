@@ -335,6 +335,7 @@ set(MU_SOURCES
     src/Render/Camera3D.cpp
     src/UI/OptionsMenu.cpp
     src/UI/MoveList.cpp
+    src/UI/MuHelper.cpp
     src/UI/Chat_InputTick.cpp
     src/UI/Chat_Send.cpp
     src/UI/UI_SkillHotkeys.cpp
@@ -406,6 +407,7 @@ set(MU_HEADERS
     src/Render/Camera3D.h
     src/UI/OptionsMenu.h
     src/UI/MoveList.h
+    src/UI/MuHelper.h
     src/Sound/SoundManager.h
     src/Game/MapManager.h
     src/Game/HeroVitals.h
