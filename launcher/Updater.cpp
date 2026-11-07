@@ -589,7 +589,8 @@ bool SelfUpdate(Http& http, const ManifestFile& launcher)
     wchar_t selfBuffer[MAX_PATH * 2];
     DWORD length = GetModuleFileNameW(nullptr, selfBuffer, _countof(selfBuffer));
     if (length == 0 || length >= _countof(selfBuffer)) return false;
-    std::wstring self(selfBuffer, length), current;
+    std::wstring self(selfBuffer, length);
+    std::string current;
     if (!HashFile(self, &current) || current == launcher.sha256) return false;
 
     Status(L"Atualizando o Launcher...");
