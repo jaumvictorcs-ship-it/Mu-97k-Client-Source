@@ -605,6 +605,8 @@ void __cdecl Player_ProcessInput(void)
     // Poblar el flag MouseOnWindow (per IDA) ANTES de la lógica de GroundClick,
     // así clickear adentro de un panel no hace caminar al jugador.
     MouseOnWindow_Update();
+    // Mu Helper: fixa o alvo antes das checagens de combate deste tick.
+    gMuHelper.UpdateAttack();
     // DAT_07d78094 y g_MouseOnWindow son la misma memoria (la escribe
     // CheckInventory por los paneles): no copiar uno en el otro acá.
     // Los botones de la barra inferior se atienden desde `Chat_InputTick`

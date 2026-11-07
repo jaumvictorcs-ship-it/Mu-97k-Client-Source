@@ -23,6 +23,10 @@ constexpr int SkillSlots = 60, SkillTableSize = 64, SkillEntrySize = 40, SkillLi
 constexpr DWORD SaveDelayMs = 1100;
 constexpr BYTE DefaultRange = 6;
 constexpr int RingSegments = 64;
+constexpr WORD NoAttackKey = 0xFFFF;
+constexpr int MaxEntities = 400, EntityStride = 0x394, EntityKeyOffset = 0x1DC, EntityDeadOffset = 0x2FD;
+constexpr int HeroSkillSlotOffset = 913;
+constexpr BYTE MaxWalkSteps = 14;
 constexpr float RingWidth = 14.0f;
 constexpr WORD MaxDelaySeconds = 3600;
 
@@ -77,6 +81,7 @@ void CMuHelper::Clear()
     m_DelayFocus = nullptr;
     m_SelectedExtra = -1;
     m_Text[0] = 0;
+    ReleaseAttack();
     m_Open = m_Active = m_Dirty = m_TextFocus = false;
 }
 
@@ -143,6 +148,7 @@ void CMuHelper::ReceiveState(const BYTE* packet, int size)
         m_AnchorY = AsCharacter(Hero)->PositionY;
     }
     m_Active = active;
+    if (!active) ReleaseAttack();
     char line[64];
     Platform::TextFormatSecure(line, "MuHelper: estado active=%d reason=%d", (int)packet[4], (int)packet[5]);
     DbgLogPublic(line);
@@ -152,6 +158,7 @@ void CMuHelper::ReceiveState(const BYTE* packet, int size)
 void CMuHelper::ReceiveMove(const BYTE* packet, int size)
 {
     if (size != 7 || !Hero) return;
+    ReleaseAttack();
     CHARACTER* hero = AsCharacter(Hero);
     const int x = packet[4], y = packet[5];
     if (hero->Movement && hero->TargetX == x && hero->TargetY == y) return;
@@ -163,7 +170,54 @@ void CMuHelper::ReceiveMove(const BYTE* packet, int size)
     hero->TargetX = (BYTE)x;
     hero->TargetY = (BYTE)y;
     hero->MovementType = 0;
+    // O pacote de movimento nativo leva até 14 passos: o restante da rota vem no próximo comando.
+    if (hero->PathNum > MaxWalkSteps) hero->PathNum = MaxWalkSteps;
     Combat_SendMovePathPacket((int)(uintptr_t)Hero, (int)(uintptr_t)&hero->Object);
+}
+
+void CMuHelper::ReceiveAttack(const BYTE* packet, int size)
+{
+    if (size != 7) return;
+    m_AttackKey = (WORD)((packet[4] << 8) | packet[5]);
+    m_AttackSkill = packet[6];
+    if (m_AttackKey == NoAttackKey) ReleaseAttack();
+}
+
+void CMuHelper::ReleaseAttack()
+{
+    m_AttackKey = NoAttackKey;
+    if (!m_Attacking) return;
+    m_Attacking = false;
+    m_bAutoAttack = m_SavedAutoAttack;
+    SelectedCharacter = -1;
+    Attacking = -1;
+}
+
+// Marca o alvo como no auto-ataque do jogador: o resto é o combate nativo do cliente.
+void CMuHelper::UpdateAttack()
+{
+    if (m_AttackKey == NoAttackKey || !Hero) return;
+    BYTE* const base = (BYTE*)(uintptr_t)DAT_07abf5d0;
+    int target = -1;
+    for (int n = 0; n < MaxEntities && target < 0; ++n) {
+        const BYTE* entity = base + n * EntityStride;
+        if (entity[0] && *(const WORD*)(entity + EntityKeyOffset) == m_AttackKey) target = n;
+    }
+    if (target < 0 || base[target * EntityStride + EntityDeadOffset] != 0) { ReleaseAttack(); return; }
+
+    if (!m_Attacking) {
+        m_SavedAutoAttack = m_bAutoAttack;
+        m_Attacking = true;
+    }
+    m_bAutoAttack = 1;
+
+    int skillSlot = -1;
+    for (int slot = 0; m_AttackSkill != 0 && slot < SkillSlots && skillSlot < 0; ++slot) {
+        if (LearnedSkill(slot) == m_AttackSkill) skillSlot = slot;
+    }
+    if (skillSlot >= 0) *(BYTE*)(Hero + HeroSkillSlotOffset) = (BYTE)skillSlot;
+    SelectedCharacter = target;
+    Attacking = (skillSlot >= 0) ? 2 : 1;   // 2 = clique direito (skill), 1 = clique esquerdo (ataque comum)
 }
 
 // Círculo no chão: mostra o raio da aba aberta; com a janela fechada, o raio de caça.
@@ -174,8 +228,10 @@ void CMuHelper::RenderWorld()
     const float radius = (float)(picking ? m_Config.PickRange : m_Config.HuntingRange) * 100.0f;
     if (radius <= 0.0f) return;
     const CHARACTER* hero = AsCharacter(Hero);
-    const float cx = (float)(m_Active ? m_AnchorX : hero->PositionX) * 100.0f + 50.0f;
-    const float cy = (float)(m_Active ? m_AnchorY : hero->PositionY) * 100.0f + 50.0f;
+    // Com "Retornar posição original" o círculo fica no ponto do Play; sem ela, acompanha o personagem.
+    const bool fixedCenter = m_Active && m_Config.ReturnToOriginalPos;
+    const float cx = (float)(fixedCenter ? m_AnchorX : hero->PositionX) * 100.0f + 50.0f;
+    const float cy = (float)(fixedCenter ? m_AnchorY : hero->PositionY) * 100.0f + 50.0f;
 
     EnableAlphaTest(true);
     GL_SetAlphaTest('\0');

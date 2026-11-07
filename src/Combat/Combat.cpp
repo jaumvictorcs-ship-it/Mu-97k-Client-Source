@@ -419,6 +419,7 @@
 #include "Item/ContentCatalog.h"
 #include "Item/Item_Equip.h"
 #include "Combat/Combat.h"
+#include "UI/MuHelper.h"
 #include "Net/Net.h"
 #include "globals.h"
 #include "functions.h"
@@ -1532,7 +1533,8 @@ void __cdecl Combat_DispatchHeroSkillAttack(void *entity_v /* IDA: c */)
     // de UI, no se ataca. `g_MouseOnWindow` lo puebla `MouseOnWindow_Update` en
     // Player_InputTick.cpp (y el widget de chat le pasa su latch
     // `g_ChatLB_MouseOnWindow`).
-    if (g_MouseOnWindow) return;             // IDA L1330: MouseOnWindow (0x07D78094)
+    // Mu Helper: o ataque automatico nao depende de onde o cursor esta.
+    if (g_MouseOnWindow && !gMuHelper.IsAttacking()) return;             // IDA L1330: MouseOnWindow (0x07D78094)
 
     // 8b) Gate por estado de animacion (IDA Attack L1335-1345).  `c+261` es el
     // action-state; el heroe (entity_type 390) solo puede atacar desde los

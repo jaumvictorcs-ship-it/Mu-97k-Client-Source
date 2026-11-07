@@ -37,6 +37,9 @@ public:
     void ReceiveConfig(const BYTE* packet, int size);
     void ReceiveState(const BYTE* packet, int size);
     void ReceiveMove(const BYTE* packet, int size);
+    void ReceiveAttack(const BYTE* packet, int size);
+    void UpdateAttack();
+    bool IsAttacking() const { return m_Attacking; }
     void RenderWorld();
     void UpdateMouse();
     void Render();
@@ -45,6 +48,7 @@ public:
 
 private:
     void ResetConfig();
+    void ReleaseAttack();
     void SendConfig();
     void SendStart(bool start);
     void MarkDirty();
@@ -73,6 +77,10 @@ private:
     int m_Tab = 0;
     int m_AnchorX = 0;
     int m_AnchorY = 0;
+    WORD m_AttackKey = 0xFFFF;
+    BYTE m_AttackSkill = 0;
+    char m_SavedAutoAttack = 1;
+    bool m_Attacking = false;
     int m_SelectedExtra = -1;
     char m_Text[MUHELPER_EXTRA_SIZE] = {};
     DWORD m_DirtyTick = 0;

@@ -1287,6 +1287,7 @@ void NetRecv_F3(BYTE* Msg, int Size, BYTE hdr, BYTE sub, bool bEncrypted)
         case 0xF0: gMuHelper.ReceiveConfig((const BYTE*)Msg, Size); break;
         case 0xF1: gMuHelper.ReceiveState((const BYTE*)Msg, Size); break;
         case 0xF2: gMuHelper.ReceiveMove((const BYTE*)Msg, Size); break;
+        case 0xF3: gMuHelper.ReceiveAttack((const BYTE*)Msg, Size); break;
         case 0xE5: {
             gMoveList.Receive(Msg, Size);
             break;
