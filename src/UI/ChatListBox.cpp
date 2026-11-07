@@ -1954,7 +1954,11 @@ static int __fastcall GuildLB_perFrameInput(DWORD* self)
                         // int.  Se porta tal cual (el original lo lee despues
                         // como int; ver Game_SceneUpdate).
                         memcpy(&_InputTextMaxArr[0], &flt_83A7ACC[0], sizeof(float));
-                        InputTextHide[0] = 1;
+                        // El cartel 126 dibuja con UI_RenderInputField, que lee
+                        // DAT_07e113d8 (lo limpia ClearInput).  InputTextHide es
+                        // el flag de RenderInputText (nombre de guild): marcarlo
+                        // aca mostraba el codigo y dejaba el nombre con '*'.
+                        DAT_07e113d8[0] = 1;
                     }
                 }
             }

@@ -593,6 +593,11 @@ void __cdecl UI_InGameMenu(void)
         memcpy(pkt + 3,  &byte_7E91790[13 * memberIdx], 10);
         memcpy(pkt + 13, (const char*)DAT_07db8710, 10);
         gNetwork.SendC1(pkt, 23);
+        // Sin limpiar, el codigo queda en InputText[0] con el chat cerrado y
+        // Enter no abre el chat (WndProc solo abre con el slot vacio).
+        memset(DAT_07db8710, 0, 0x100);
+        *(DWORD*)DAT_07d780a8 = 0;
+        DAT_07e113d8[0] = 0;
         goto tail;
     }
 
@@ -1004,6 +1009,7 @@ void __cdecl UI_InGameMenu(void)
             memset(DAT_07db8710, 0, 0x100);
             *(DWORD*)DAT_07d780a8 = 0;
             DAT_07d552e4  = 0;
+            DAT_07e113d8[0] = 0;
             // IDA consume MouseLButtonPush al cancelar. Estos dos latches son
             // el equivalente del pump reconstruido y evitan propagar el click
             // del modal al movimiento en el mismo frame.
