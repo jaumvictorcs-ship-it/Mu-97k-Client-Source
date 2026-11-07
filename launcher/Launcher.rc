@@ -1,0 +1,4 @@
+// Icone (o mesmo do main.exe) e manifest com Common Controls v6 e asInvoker.
+#include <winres.h>
+1 ICON "../src/icon.ico"
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "Launcher.manifest"

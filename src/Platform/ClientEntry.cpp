@@ -444,6 +444,18 @@ int main(int, char**)
         }
     }
 #ifdef _WIN32
+    // Mu CLT: aberto direto (sem -launcher), passa pelo Launcher.exe, que atualiza o cliente.
+    // Sem Launcher.exe ao lado (desenvolvimento, cliente antigo), segue normal.
+    if (strstr(lpCmdLine, "-launcher") == nullptr && GetFileAttributesA("Launcher.exe") != INVALID_FILE_ATTRIBUTES) {
+        STARTUPINFOA startup = { sizeof(startup) };
+        PROCESS_INFORMATION process = {};
+        char command[] = "Launcher.exe";
+        if (CreateProcessA("Launcher.exe", command, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startup, &process)) {
+            CloseHandle(process.hThread);
+            CloseHandle(process.hProcess);
+            return 0;
+        }
+    }
     _set_invalid_parameter_handler(SilentInvalidParameterHandler);
 #endif
     if (!Platform::GetDiagnostics().Install(DbgLogPublic)) {

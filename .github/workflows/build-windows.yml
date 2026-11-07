@@ -5,6 +5,8 @@
 # - msbuild: compila mu97k.sln con msbuild, para comparar contra CMake.
 # - compare: compara las líneas de comando de cl/link/lib de los dos builds
 #            (.github/scripts/compare_build_flags.py), por configuración.
+# - launcher: Launcher.exe (proyecto CMake aparte en launcher/) + autotest.
+# - package:  MuCLT-update-Release = main.exe + Launcher.exe (Release), listo para publicar.
 # - map-symbols (sólo PRs, informativo): compara los símbolos de main.map entre la base y
 #            el head del PR (.github/scripts/compare_map_symbols.py).
 
@@ -67,6 +69,54 @@ jobs:
         with:
           name: tlogs-cmake-${{ matrix.config }}
           path: tlogs
+
+  launcher:
+    name: launcher (Release)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar
+        run: cmake -S launcher -B build-launcher -A Win32 -T v143
+
+      - name: Compilar
+        run: cmake --build build-launcher --config Release --parallel -- /v:minimal
+
+      - name: Autoteste
+        run: build-launcher/Release/launcher_selftest.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: launcher-Release
+          path: build-launcher/bin/Release/Launcher.exe
+          if-no-files-found: error
+
+  package:
+    name: pacote de update (Release)
+    needs: [ cmake, launcher ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: mu97k-cmake-Release
+          path: pkg
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: launcher-Release
+          path: pkg
+
+      - name: Conferir e calcular SHA-256
+        run: |
+          test -f pkg/main.exe && test -f pkg/Launcher.exe
+          rm -f pkg/main.map
+          (cd pkg && sha256sum main.exe Launcher.exe | tee SHA256SUMS)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MuCLT-update-Release
+          path: pkg
+          if-no-files-found: error
 
   msbuild:
     name: msbuild (${{ matrix.config }})
