@@ -1519,7 +1519,7 @@ void __cdecl Combat_DispatchHeroSkillAttack(void *entity_v /* IDA: c */)
     // Player_InputTick L942 (=1) y este Attack (=2/-1), y lo leen el gate de
     // auto-ataque de arriba y Player_InputTick L599.  En nuestro arbol esa
     // direccion es `Attacking`, que Mouse_Hover ya usa con esa semantica.
-    if (DAT_07e11e18 != 0 && (int)gMapManager.GetCurrentMap() != 6) {  // IDA: m_bAutoAttack, World
+    if (DAT_07e11e18 != 0 && ((int)gMapManager.GetCurrentMap() != 6 || gMuHelper.IsAttacking())) {  // IDA: m_bAutoAttack, World
         const BYTE movementState = *(char *)&AsCharacter(entity)->Class & 7;       // IDA: v16 = c[444] & 7 (clase)
         if ((movementState != 2 || iType == 24 || iType == 25 || iType == 52)
             && (movementState != 1 || iType != 48)) {

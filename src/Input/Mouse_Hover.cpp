@@ -36,6 +36,7 @@
 //   calls FUN_004afb00() to process the pending click action.
 
 #include "stdafx.h"
+#include "UI/MuHelper.h"
 #include "Platform/ITimer.h"
 #include "Platform/IInput.h"
 #include "globals.h"
@@ -82,7 +83,7 @@ void Mouse_UpdateHoverTargets(void)
     // ── 2. Reset hover targets ────────────────────────────────────────────────
 
     // `SelectedCharacter >= 0` evita leer entity[+0x2fd] con indice -1 (estado inicial).
-    if (m_bAutoAttack == '\0' || gMapManager.GetCurrentMap() == 6) {
+    if (m_bAutoAttack == '\0' || (gMapManager.GetCurrentMap() == 6 && !gMuHelper.IsAttacking())) {
         // Cursor disabled or spectator state
         SelectedCharacter = -1;
         Attacking = -1;

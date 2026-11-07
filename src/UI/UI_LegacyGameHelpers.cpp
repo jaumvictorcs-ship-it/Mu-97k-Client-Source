@@ -2,6 +2,7 @@
 // UI_LegacyGameHelpers.cpp
 
 #include "stdafx.h"
+#include "UI/MuHelper.h"
 void __fastcall FUN_0045aaa0_impl(void *_this, char flags);
 void __cdecl    FUN_00408680(void *_this, char flags);
 #include "globals.h"
@@ -137,7 +138,7 @@ char __cdecl SelectSkillByHotkey(int a1)
             playerEnt[913] = (char)i;
             found = 1;
         }
-        if (m_bAutoAttack != 0 && gMapManager.GetCurrentMap() != 6) {
+        if (m_bAutoAttack != 0 && (gMapManager.GetCurrentMap() != 6 || gMuHelper.IsAttacking())) {
             const char skillType = CA[(unsigned char)playerEnt[913] + 87];
             if (skillType == 6 || skillType == 15) {
                 SelectedCharacter = 0xffffffff;
