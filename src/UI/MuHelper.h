@@ -36,6 +36,8 @@ public:
     void Toggle();
     void ReceiveConfig(const BYTE* packet, int size);
     void ReceiveState(const BYTE* packet, int size);
+    void ReceiveMove(const BYTE* packet, int size);
+    void RenderWorld();
     void UpdateMouse();
     void Render();
     // Retorna true enquanto o campo de texto estiver em foco: os atalhos ficam bloqueados.
@@ -69,6 +71,8 @@ private:
     int m_PopupX = 0;
     int m_PopupY = 0;
     int m_Tab = 0;
+    int m_AnchorX = 0;
+    int m_AnchorY = 0;
     int m_SelectedExtra = -1;
     char m_Text[MUHELPER_EXTRA_SIZE] = {};
     DWORD m_DirtyTick = 0;

@@ -6,6 +6,10 @@
 #include "Core/Window.h"
 #include "Net/Network.h"
 #include "UI/UIState.h"
+#include "Entity/EntityTypes.h"
+#include <cmath>
+
+extern "C" void DbgLogPublic(const char* msg);
 
 CMuHelper gMuHelper;
 
@@ -18,6 +22,8 @@ constexpr int PopupWidth = 120, PopupRowStep = 12;
 constexpr int SkillSlots = 60, SkillTableSize = 64, SkillEntrySize = 40, SkillListOffset = 0x57;
 constexpr DWORD SaveDelayMs = 1100;
 constexpr BYTE DefaultRange = 6;
+constexpr int RingSegments = 64;
+constexpr float RingWidth = 14.0f;
 constexpr WORD MaxDelaySeconds = 3600;
 
 bool Inside(int x, int y, int w, int h)
@@ -131,7 +137,64 @@ void CMuHelper::ReceiveConfig(const BYTE* packet, int size)
 void CMuHelper::ReceiveState(const BYTE* packet, int size)
 {
     if (size != 6) return;
-    m_Active = packet[4] != 0;
+    const bool active = packet[4] != 0;
+    if (active && !m_Active && Hero) {
+        m_AnchorX = AsCharacter(Hero)->PositionX;
+        m_AnchorY = AsCharacter(Hero)->PositionY;
+    }
+    m_Active = active;
+    char line[64];
+    Platform::TextFormatSecure(line, "MuHelper: estado active=%d reason=%d", (int)packet[4], (int)packet[5]);
+    DbgLogPublic(line);
+}
+
+// O servidor escolhe o destino; o cliente anda como em um clique no chão.
+void CMuHelper::ReceiveMove(const BYTE* packet, int size)
+{
+    if (size != 7 || !Hero) return;
+    CHARACTER* hero = AsCharacter(Hero);
+    const int x = packet[4], y = packet[5];
+    if (hero->Movement && hero->TargetX == x && hero->TargetY == y) return;
+    const unsigned int found = Path_FindRoute(hero->PositionX, hero->PositionY, x, y, (unsigned char*)Hero + 852, (float)packet[6]);
+    char line[80];
+    Platform::TextFormatSecure(line, "MuHelper: andar (%d,%d)->(%d,%d) reach=%d rota=%u", hero->PositionX, hero->PositionY, x, y, (int)packet[6], found);
+    DbgLogPublic(line);
+    if (!found) return;
+    hero->TargetX = (BYTE)x;
+    hero->TargetY = (BYTE)y;
+    hero->MovementType = 0;
+    Combat_SendMovePathPacket((int)(uintptr_t)Hero, (int)(uintptr_t)&hero->Object);
+}
+
+// Círculo no chão: mostra o raio da aba aberta; com a janela fechada, o raio de caça.
+void CMuHelper::RenderWorld()
+{
+    if (SceneFlag != 5 || !Hero || (!m_Open && !m_Active)) return;
+    const bool picking = m_Open && m_Tab == 1;
+    const float radius = (float)(picking ? m_Config.PickRange : m_Config.HuntingRange) * 100.0f;
+    if (radius <= 0.0f) return;
+    const CHARACTER* hero = AsCharacter(Hero);
+    const float cx = (float)(m_Active ? m_AnchorX : hero->PositionX) * 100.0f + 50.0f;
+    const float cy = (float)(m_Active ? m_AnchorY : hero->PositionY) * 100.0f + 50.0f;
+
+    EnableAlphaTest(true);
+    GL_SetAlphaTest('\0');
+    GL_DisableDepthTest();
+    if (picking) glColor4f(.3f, 1.0f, .4f, .9f);
+    else glColor4f(1.0f, .35f, .2f, .9f);
+    glBegin(GL_QUAD_STRIP);
+    for (int n = 0; n <= RingSegments; ++n) {
+        const float angle = 6.2831853f * (float)n / (float)RingSegments;
+        for (const float r : { radius - RingWidth, radius }) {
+            const float x = cx + cosf(angle) * r;
+            const float y = cy + sinf(angle) * r;
+            glVertex3f(x, y, RequestTerrainHeight(x, y) + 8.0f);
+        }
+    }
+    glEnd();
+    GL_EnableDepthTest();
+    GL_ResetState();
+    glColor4f(1, 1, 1, 1);
 }
 
 void CMuHelper::AddExtra()
@@ -338,18 +401,27 @@ void CMuHelper::RunPicking()
     Range(PanelY + 40, &m_Config.PickRange);
 
     Section(PanelY + 80, 22);
+    const BYTE pickAll = m_Config.PickAll, pickSelected = m_Config.PickSelected;
     Check(x + 8, PanelY + 85, "Coletar todos os itens", &m_Config.PickAll);
 
     int y = PanelY + 106;
     Section(y, 256);
     Check(x + 8, y + 5, "Habilitar coleta dos itens abaixo?", &m_Config.PickSelected);
     y += 24;
+    const BYTE filters = (BYTE)(m_Config.PickJewels + m_Config.PickExcellent + m_Config.PickZen + m_Config.PickExtra);
     Check(x + 8, y, "Jewels", &m_Config.PickJewels);
     Check(x + 58, y, "Excellent Item", &m_Config.PickExcellent);
     Check(x + 138, y, "Zen", &m_Config.PickZen);
     y += 16;
     Check(x + 8, y, "Extra Item", &m_Config.PickExtra);
     y += 18;
+
+    // As opções são excludentes: marcar um filtro significa coletar só o que foi marcado.
+    if (!m_Rendering) {
+        const BYTE filtersNow = (BYTE)(m_Config.PickJewels + m_Config.PickExcellent + m_Config.PickZen + m_Config.PickExtra);
+        if (filtersNow > filters || (m_Config.PickSelected && !pickSelected)) { m_Config.PickSelected = 1; m_Config.PickAll = 0; }
+        else if (m_Config.PickAll && !pickAll) m_Config.PickSelected = 0;
+    }
 
     const int fieldX = x + 8, fieldWidth = ContentWidth - 16 - 38;
     if (m_Rendering) {

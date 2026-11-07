@@ -210,6 +210,7 @@
 #include "Item/ContentCatalog.h"
 #include "Config/UserSettings.h"
 #include "UI/HealthBar.h"
+#include "UI/MuHelper.h"
 #include "Render/Render.h"
 #include "Render/Camera.h"
 #include "Render/Player_Render.h"
@@ -617,6 +618,7 @@ void Render_Scene3D(void)
     RenderFishs(0, 0, 0, 0);                    // RenderFishs
     RenderBugs();                              // RenderBugs
     SkillEffects_RenderAll();
+    gMuHelper.RenderWorld();
     ItemDrop_Render();
     EffectPool_RenderAll();
     Player_Render();                             // Player_Render
