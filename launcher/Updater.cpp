@@ -185,6 +185,7 @@ public:
 
     bool Open()
     {
+        if (m_connect) return true;
         m_session = WinHttpOpen(L"MuCLT-Launcher/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
         if (!m_session) return false;
         WinHttpSetTimeouts(m_session, 10000, 10000, 30000, 30000);
@@ -663,15 +664,22 @@ DWORD WINAPI UpdateThread(LPVOID parameter)
     Status(L"Verificando atualiza\u00e7\u00f5es...");
     Http http;
     std::string manifestText, signature;
-    if (!http.Open() || !http.GetText(std::wstring(kBase) + L"manifest.json", &manifestText, kMaxManifest) ||
-        !http.GetText(std::wstring(kBase) + L"manifest.sig", &signature, 1024))
+    bool signatureOk = false;
+    // 2 tentativas: uma publicacao trocando manifest.json e manifest.sig no mesmo instante nao vira falso alarme.
+    for (int attempt = 0; attempt < 2 && !signatureOk; attempt++)
     {
-        Log(L"sem conexao com https://%s%smanifest.json (erro %lu)", kHost, kBase, GetLastError());
-        Finish(UPDATE_OFFLINE, L"Sem conex\u00e3o com o servidor de atualiza\u00e7\u00f5es. O cliente pode estar desatualizado.");
-        return 0;
+        if (attempt > 0) Sleep(2000);
+        if (!http.Open() || !http.GetText(std::wstring(kBase) + L"manifest.json", &manifestText, kMaxManifest) ||
+            !http.GetText(std::wstring(kBase) + L"manifest.sig", &signature, 1024))
+        {
+            Log(L"sem conexao com https://%s%smanifest.json (erro %lu)", kHost, kBase, GetLastError());
+            Finish(UPDATE_OFFLINE, L"Sem conex\u00e3o com o servidor de atualiza\u00e7\u00f5es. O cliente pode estar desatualizado.");
+            return 0;
+        }
+        while (!signature.empty() && (signature.back() == '\n' || signature.back() == '\r' || signature.back() == ' ')) signature.pop_back();
+        signatureOk = VerifyManifestSignature(manifestText, signature);
     }
-    while (!signature.empty() && (signature.back() == '\n' || signature.back() == '\r' || signature.back() == ' ')) signature.pop_back();
-    if (!VerifyManifestSignature(manifestText, signature))
+    if (!signatureOk)
     {
         Log(L"assinatura do manifest invalida: atualizacao recusada");
         Finish(UPDATE_OFFLINE, L"Atualiza\u00e7\u00e3o recusada: assinatura inv\u00e1lida. Avise a equipe Mu CLT.");
