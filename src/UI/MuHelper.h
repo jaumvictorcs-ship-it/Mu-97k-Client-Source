@@ -49,6 +49,8 @@ public:
 private:
     void ResetConfig();
     void ReleaseAttack();
+    void UpdateManual();
+    void SendManual(bool active);
     void SendConfig();
     void SendStart(bool start);
     void MarkDirty();
@@ -81,6 +83,8 @@ private:
     BYTE m_AttackSkill = 0;
     char m_SavedAutoAttack = 1;
     bool m_Attacking = false;
+    bool m_Manual = false;
+    DWORD m_ManualTick = 0;
     int m_SelectedExtra = -1;
     char m_Text[MUHELPER_EXTRA_SIZE] = {};
     DWORD m_DirtyTick = 0;

@@ -24,6 +24,7 @@ constexpr DWORD SaveDelayMs = 1100;
 constexpr BYTE DefaultRange = 6;
 constexpr int RingSegments = 64;
 constexpr WORD NoAttackKey = 0xFFFF;
+constexpr DWORD ManualGraceMs = 400;
 constexpr int MaxEntities = 400, EntityStride = 0x394, EntityKeyOffset = 0x1DC, EntityDeadOffset = 0x2FD;
 constexpr int HeroSkillSlotOffset = 913;
 constexpr BYTE MaxWalkSteps = 14;
@@ -82,6 +83,7 @@ void CMuHelper::Clear()
     m_SelectedExtra = -1;
     m_Text[0] = 0;
     ReleaseAttack();
+    m_Manual = false;
     m_Open = m_Active = m_Dirty = m_TextFocus = false;
 }
 
@@ -148,7 +150,7 @@ void CMuHelper::ReceiveState(const BYTE* packet, int size)
         m_AnchorY = AsCharacter(Hero)->PositionY;
     }
     m_Active = active;
-    if (!active) ReleaseAttack();
+    if (!active) { ReleaseAttack(); m_Manual = false; }
     char line[64];
     Platform::TextFormatSecure(line, "MuHelper: estado active=%d reason=%d", (int)packet[4], (int)packet[5]);
     DbgLogPublic(line);
@@ -157,7 +159,7 @@ void CMuHelper::ReceiveState(const BYTE* packet, int size)
 // O servidor escolhe o destino; o cliente anda como em um clique no chão.
 void CMuHelper::ReceiveMove(const BYTE* packet, int size)
 {
-    if (size != 7 || !Hero) return;
+    if (size != 7 || !Hero || m_Manual) return;
     ReleaseAttack();
     CHARACTER* hero = AsCharacter(Hero);
     const int x = packet[4], y = packet[5];
@@ -177,7 +179,7 @@ void CMuHelper::ReceiveMove(const BYTE* packet, int size)
 
 void CMuHelper::ReceiveAttack(const BYTE* packet, int size)
 {
-    if (size != 7) return;
+    if (size != 7 || m_Manual) return;
     m_AttackKey = (WORD)((packet[4] << 8) | packet[5]);
     m_AttackSkill = packet[6];
     if (m_AttackKey == NoAttackKey) ReleaseAttack();
@@ -194,9 +196,39 @@ void CMuHelper::ReleaseAttack()
 }
 
 // Marca o alvo como no auto-ataque do jogador: o resto é o combate nativo do cliente.
+void CMuHelper::SendManual(bool active)
+{
+    const BYTE packet[5] = { 0xC1, 5, 0xF3, 0xF2, (BYTE)(active ? 1 : 0) };
+    gNetwork.SendC1(packet, sizeof(packet));
+}
+
+// O clique do jogador tem prioridade: sem soltar o alvo, o clique no chao cairia no ramo de atacar.
+void CMuHelper::UpdateManual()
+{
+    const DWORD now = Platform::GetTimer().Ticks();
+    const bool clicking = DAT_07d78094 == 0 && (DAT_083a4124 != 0 || DAT_083a42c4 != 0);
+    if (clicking) {
+        m_ManualTick = now;
+        if (!m_Manual) {
+            m_Manual = true;
+            ReleaseAttack();
+            SendManual(true);
+        }
+        return;
+    }
+    if (m_Manual && !AsCharacter(Hero)->Movement && now - m_ManualTick >= ManualGraceMs) {
+        m_Manual = false;
+        m_AnchorX = AsCharacter(Hero)->PositionX;
+        m_AnchorY = AsCharacter(Hero)->PositionY;
+        SendManual(false);
+    }
+}
+
 void CMuHelper::UpdateAttack()
 {
-    if (m_AttackKey == NoAttackKey || !Hero) return;
+    if (!m_Active || !Hero) return;
+    UpdateManual();
+    if (m_Manual || m_AttackKey == NoAttackKey) return;
     BYTE* const base = (BYTE*)(uintptr_t)DAT_07abf5d0;
     int target = -1;
     for (int n = 0; n < MaxEntities && target < 0; ++n) {
@@ -229,7 +261,7 @@ void CMuHelper::RenderWorld()
     if (radius <= 0.0f) return;
     const CHARACTER* hero = AsCharacter(Hero);
     // Com "Retornar posição original" o círculo fica no ponto do Play; sem ela, acompanha o personagem.
-    const bool fixedCenter = m_Active && m_Config.ReturnToOriginalPos;
+    const bool fixedCenter = m_Active && m_Config.ReturnToOriginalPos && !m_Manual;
     const float cx = (float)(fixedCenter ? m_AnchorX : hero->PositionX) * 100.0f + 50.0f;
     const float cy = (float)(fixedCenter ? m_AnchorY : hero->PositionY) * 100.0f + 50.0f;
 
