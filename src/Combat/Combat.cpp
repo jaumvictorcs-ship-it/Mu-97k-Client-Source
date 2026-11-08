@@ -1465,7 +1465,7 @@ void __cdecl Combat_DispatchHeroSkillAttack(void *entity_v /* IDA: c */)
         // entidad en un casteo perpetuo después de soltar el botón derecho.
         const int worldIndex = (int)gMapManager.GetCurrentMap();
         const bool autoAttackOK = (DAT_07e11e18 != 0)         // m_bAutoAttack
-            && worldIndex != 6                                // not in dialog/loading
+            && (worldIndex != 6 || gMuHelper.IsAttacking())   // not in dialog/loading
             && Attacking == 2                              // IDA: Attacking (0x00559C58)
             && SelectedCharacter != -1;                            // IDA: SelectedCharacter (0x00559C50)
         if (!autoAttackOK && !bSuccess) {
