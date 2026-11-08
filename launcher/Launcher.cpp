@@ -131,20 +131,20 @@ void ShadowText(HDC dc, const std::wstring& text, RECT rect, UINT format, COLORR
 
 void DrawBar(HDC dc, const RECT& rect, int permille)
 {
-    HBRUSH track = CreateSolidBrush(RGB(22, 10, 8));
+    HBRUSH track = CreateSolidBrush(RGB(10, 22, 45));
     FillRect(dc, &rect, track);
     DeleteObject(track);
     int fill = (int)((rect.right - rect.left - 2) * (long long)permille / 1000);
     if (fill > 0)
     {
         TRIVERTEX vertex[2] = {
-            { rect.left + 1, rect.top + 1, 0xC800, 0x3C00, 0x1400, 0 },
-            { rect.left + 1 + fill, rect.bottom - 1, 0xFF00, 0xB400, 0x4600, 0 },
+            { rect.left + 1, rect.top + 1, 0x1E00, 0x5A00, 0xB400, 0 },
+            { rect.left + 1 + fill, rect.bottom - 1, 0x4600, 0x9600, 0xF000, 0 },
         };
         GRADIENT_RECT gradient = { 0, 1 };
         GradientFill(dc, vertex, 2, &gradient, 1, GRADIENT_FILL_RECT_H);
     }
-    HBRUSH border = CreateSolidBrush(RGB(150, 112, 56));
+    HBRUSH border = CreateSolidBrush(RGB(40, 90, 160));
     FrameRect(dc, &rect, border);
     DeleteObject(border);
 }
@@ -153,7 +153,7 @@ void DrawGlyph(HDC dc, const RECT& rect, bool close, bool hot)
 {
     if (hot)
     {
-        HBRUSH back = CreateSolidBrush(close ? RGB(150, 30, 20) : RGB(70, 40, 24));
+        HBRUSH back = CreateSolidBrush(close ? RGB(150, 30, 20) : RGB(28, 54, 90));
         FillRect(dc, &rect, back);
         DeleteObject(back);
     }
@@ -183,7 +183,7 @@ void Paint(HWND window)
     HDC source = CreateCompatibleDC(screen);
 
     if (g_background) Blit(canvas, source, g_background, 0, 0, kWidth, kHeight, 0, 0);
-    else { HBRUSH b = CreateSolidBrush(RGB(40, 10, 8)); RECT all = { 0, 0, kWidth, kHeight }; FillRect(canvas, &all, b); DeleteObject(b); }
+    else { HBRUSH b = CreateSolidBrush(RGB(10, 20, 40)); RECT all = { 0, 0, kWidth, kHeight }; FillRect(canvas, &all, b); DeleteObject(b); }
 
     if (g_buttons)
     {
