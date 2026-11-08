@@ -5,6 +5,7 @@
 // Note: despite the name, this loads textures for player gear, not monster models.
 // Monster models are handled by Monster_Data.cpp (Monster_LoadStartupData, IDA: Monster_Data_Load).
 #include "stdafx.h"
+#include "Item/ItemDefines.h"
 #include "globals.h"
 #include "functions.h"
 
@@ -69,6 +70,24 @@ void __cdecl Model_LoadPlayerEquipmentTextures(void)
         OpenTexture(i + 0x20, "Player\\", 0x2600, '\x01');
         OpenTexture(i + 0x40, "Player\\", 0x2600, '\x01');
         OpenTexture(i + 0x60, "Player\\", 0x2600, '\x01');
+    }
+
+    // Equipment texture binding for Great Dragon (tier 21)
+    OpenTexture(MODEL_HELM   + 21, "Player\\", 0x2600, '\x01');
+    OpenTexture(MODEL_ARMOR  + 21, "Player\\", 0x2600, '\x01');
+    OpenTexture(MODEL_PANTS  + 21, "Player\\", 0x2600, '\x01');
+    OpenTexture(MODEL_GLOVES + 21, "Player\\", 0x2600, '\x01');
+    OpenTexture(MODEL_BOOTS  + 21, "Player\\", 0x2600, '\x01');
+
+    // Classic 97d+99i sets (tiers 23..29)
+    for (int sub = 23; sub <= 29; sub++) {
+        if (sub != 24) { // Hurricane não tem elmo (MG)
+            OpenTexture(MODEL_HELM + sub, "Player\\", 0x2600, '\x01');
+        }
+        OpenTexture(MODEL_ARMOR  + sub, "Player\\", 0x2600, '\x01');
+        OpenTexture(MODEL_PANTS  + sub, "Player\\", 0x2600, '\x01');
+        OpenTexture(MODEL_GLOVES + sub, "Player\\", 0x2600, '\x01');
+        OpenTexture(MODEL_BOOTS  + sub, "Player\\", 0x2600, '\x01');
     }
 
     DAT_0055a7c4 = 1;
