@@ -308,6 +308,24 @@ void __cdecl Model_LoadPlayerAndItemMeshes(void)
         AccessModel(i + 0x2ef, "Data\\Player\\", "BootMale",  i);
     }
 
+    // Great Dragon (tier 21, BMD suffix 22)
+    AccessModel(MODEL_HELM   + 21, "Data\\Player\\", "HelmMale",  22);
+    AccessModel(MODEL_ARMOR  + 21, "Data\\Player\\", "ArmorMale", 22);
+    AccessModel(MODEL_PANTS  + 21, "Data\\Player\\", "PantMale",  22);
+    AccessModel(MODEL_GLOVES + 21, "Data\\Player\\", "GloveMale", 22);
+    AccessModel(MODEL_BOOTS  + 21, "Data\\Player\\", "BootMale",  22);
+
+    // Sets clássicos 97d+99i (sub 23..29)
+    for (int sub = 23; sub <= 29; sub++) {
+        if (sub != 24) { // Hurricane não tem helm (MG)
+            AccessModel(MODEL_HELM + sub, "Data\\Player\\", "HelmMale", sub);
+        }
+        AccessModel(MODEL_ARMOR  + sub, "Data\\Player\\", "ArmorMale", sub);
+        AccessModel(MODEL_PANTS  + sub, "Data\\Player\\", "PantMale",  sub);
+        AccessModel(MODEL_GLOVES + sub, "Data\\Player\\", "GloveMale", sub);
+        AccessModel(MODEL_BOOTS  + sub, "Data\\Player\\", "BootMale",  sub);
+    }
+
     DAT_0055a7c4 = 1;
 
     // Shadow BMD

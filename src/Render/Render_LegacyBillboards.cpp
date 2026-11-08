@@ -140,7 +140,12 @@ void __cdecl PartObjectColor(int param_1, float param_2, float param_3, float *p
             case 0xd: uVar4 = 4; break;
             case 0xf: uVar4 = 7; break;
             case 0x10: uVar4 = 10; break;
-            case 0x11: case 0x13: case 0x14: uVar4 = 9; break;
+            case 0x11: case 0x13: case 0x14: case 0x15: case 0x17: uVar4 = 9; break; // Dark Phoenix, Divine, Thunder Hawk, Great Dragon, Flaming Phoenix
+            case 0x18: case 0x1a: uVar4 = 2; break; // Hurricane, Storm
+            case 0x19: uVar4 = 6; break; // Nature
+            case 0x1b: uVar4 = 7; break; // Magus
+            case 0x1c: uVar4 = 10; break; // Adamantine
+            case 0x1d: uVar4 = 5; break; // Dark Soul
             default: break;
             }
         }
