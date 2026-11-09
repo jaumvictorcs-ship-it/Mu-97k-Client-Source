@@ -316,14 +316,17 @@ void __cdecl Model_LoadPlayerAndItemMeshes(void)
     AccessModel(MODEL_BOOTS  + 21, "Data\\Player\\", "BootMale",  22);
 
     // Sets clássicos 97d+99i (sub 23..29)
+    // Os BMD seguem a numeração do cliente DarksTeam 97d99i (arquivo = índice DarksTeam + 1).
+    static const int kSetFile[7] = { 22, 24, 25, 27, 28, 29, 23 }; // Flaming Phoenix, Hurricane, Nature, Storm, Magus, Adamantine, Dark Soul
     for (int sub = 23; sub <= 29; sub++) {
+        const int f = kSetFile[sub - 23];
         if (sub != 24) { // Hurricane não tem helm (MG)
-            AccessModel(MODEL_HELM + sub, "Data\\Player\\", "HelmMale", sub);
+            AccessModel(MODEL_HELM + sub, "Data\\Player\\", "HelmMale", f);
         }
-        AccessModel(MODEL_ARMOR  + sub, "Data\\Player\\", "ArmorMale", sub);
-        AccessModel(MODEL_PANTS  + sub, "Data\\Player\\", "PantMale",  sub);
-        AccessModel(MODEL_GLOVES + sub, "Data\\Player\\", "GloveMale", sub);
-        AccessModel(MODEL_BOOTS  + sub, "Data\\Player\\", "BootMale",  sub);
+        AccessModel(MODEL_ARMOR  + sub, "Data\\Player\\", "ArmorMale", f);
+        AccessModel(MODEL_PANTS  + sub, "Data\\Player\\", "PantMale",  f);
+        AccessModel(MODEL_GLOVES + sub, "Data\\Player\\", "GloveMale", f);
+        AccessModel(MODEL_BOOTS  + sub, "Data\\Player\\", "BootMale",  f);
     }
 
     DAT_0055a7c4 = 1;
