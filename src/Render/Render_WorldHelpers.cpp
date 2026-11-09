@@ -9,6 +9,7 @@
 // infer behaviour.
 
 #include "stdafx.h"
+#include "Item/ContentCatalog.h"
 #include "Platform/IInput.h"
 #include "Render/Camera3D.h"
 #include "Config/UserSettings.h"
@@ -904,8 +905,11 @@ void __cdecl RenderWheelWeapon(DWORD o)
     if (!owner) return;
 
     // Modelo del arma = itemType + 400 (owner+136 = índice del item).
-    const int model_id = *(unsigned char*)(owner + 136) + ITEM_MODEL_BASE;
-    if (model_id < 0 || model_id >= 1024) return;
+    // owner[136] guarda o modelo LOGICO (vanilla que a arma imita); armas agregadas (>= 512)
+    // desenham o modelo proprio, como o corpo do personagem (EntityDrawModel).
+    const int model_id = gContentCatalog.EntityDrawModel((const void*)(uintptr_t)owner,
+                                                         *(unsigned char*)(owner + 136) + ITEM_MODEL_BASE);
+    if (model_id < 0 || model_id >= MODEL_MAX_TOTAL) return;
 
     // Giro: o+200 acumula -30°/frame y se suma al angle[2]; el arma además
     // flota 100 unidades sobre su posición y fija angle[1] = 90°.

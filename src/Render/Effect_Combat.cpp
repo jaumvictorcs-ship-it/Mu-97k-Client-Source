@@ -2,6 +2,7 @@
 // Efectos de combate: anillo de bombas, arma del Rageful Blow, sangre.
 
 #include "stdafx.h"
+#include "Item/ContentCatalog.h"
 #include "globals.h"
 #include "functions.h"
 
@@ -66,8 +67,11 @@ void __cdecl ItemDrop_RenderGroundWeapon(int o) {
     const DWORD owner = *(DWORD*)(o + 252);
     if (!owner || !DAT_05828d58 || !DAT_07abf5d8) return;
 
-    const int model_id = *(unsigned char*)(owner + 136) + ITEM_MODEL_BASE;
-    if (model_id < 0 || model_id >= 1024) return;
+    // owner[136] guarda o modelo LOGICO (vanilla que a arma imita); armas agregadas (>= 512)
+    // desenham o modelo proprio, como o corpo do personagem (EntityDrawModel).
+    const int model_id = gContentCatalog.EntityDrawModel((const void*)(uintptr_t)owner,
+                                                         *(unsigned char*)(owner + 136) + ITEM_MODEL_BASE);
+    if (model_id < 0 || model_id >= MODEL_MAX_TOTAL) return;
 
     const float alpha = AsObject(o)->Alpha;
     BYTE* mdl = (BYTE*)(uintptr_t)DAT_05828d58 + 188 * model_id;
