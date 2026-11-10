@@ -328,7 +328,12 @@ void Recv_DeleteChar(const BYTE* Msg)
 // ---------------------------------------------------------------------------
 void Recv_JoinMapServer(const BYTE* Msg, int bEncrypted)
 {
+    // MU CLT: o server envia o F3/E1 (gObjCalcCharacter) ANTES deste F3/03. Sem preservar,
+    // o ping 0x0E caia no calculo local, que soma a velocidade de itens sem requisito
+    // (ex.: apos reset) e o anti speed hack do server derrubava o personagem.
+    const CServerCharacterStats serverStats = gServerCharacterStats;
     gNetwork.ResetCharacterData();
+    gServerCharacterStats = serverStats;
     // El F3/03 que envía el server MuEmu (Protocol.cpp GDCharacterInfoSend →
     // DataServer → DGCharacterInfoRecv → cliente) llega con bEncrypted=false: el
     // dispatcher nunca lo setea. El IDA original 0.97K diferenciaba ambos paths
