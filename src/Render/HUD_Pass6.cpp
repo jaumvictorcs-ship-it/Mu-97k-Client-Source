@@ -734,6 +734,19 @@ extern "C" {
     int  GuildTotalScore = 0;
     int  g_nGuildMemberCount = 0;
 }
+
+// MU CLT: experiencia passa de 2^31 acima do nivel ~283; troca %d por %u no texto do jogo.
+static const char* ExpFmtUnsigned(const char* fmt)
+{
+    static char out[256];
+    size_t n = 0;
+    for (; fmt && *fmt && n < sizeof(out) - 1; ++fmt) {
+        out[n++] = *fmt;
+        if (fmt[0] == '%' && fmt[1] == 'd' && n < sizeof(out) - 1) { out[n++] = 'u'; ++fmt; }
+    }
+    out[n] = 0;
+    return out;
+}
 // `byte_7E919BC` NO es un buffer propio: es la tabla global `DAT_07e919bc`
 // (stride 80), la misma que escribe Net_Process.
 #define byte_7E919BC  DAT_07e919bc
@@ -853,7 +866,7 @@ extern "C" void __cdecl RenderCharacterInfoWindow(int iPosX, int iPosY)
 
     // ── Experience (cur / max) ──────────────────────────────────────────────
     gFont.SelectFont(gFont.GetTextDC(), gFont.GetFont(FONT_NORMAL));
-    sprintf(Buffer, GlobalText[201], *(int*)(CA + 16), *(int*)(CA + 52));
+    sprintf(Buffer, ExpFmtUnsigned(GlobalText[201]), *(unsigned int*)(CA + 16), *(unsigned int*)(CA + 52));
     m_dwBackColor = 0x80000000u;
     m_dwTextColor = 0xFFFFFFFFu;
     RenderText(iPosX + 24, iPosY + 80, Buffer, 130 * (int)gWindow.GetWidth() / 0x280, 0, 0);

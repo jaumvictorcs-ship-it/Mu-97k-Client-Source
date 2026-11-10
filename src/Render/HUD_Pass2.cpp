@@ -645,6 +645,19 @@ void Render_CharNameTags(void)
 // via RenderNumber2D at (425, 434).  Mouse hover over the bar shows a
 // tooltip with the absolute exp values.
 // =============================================================================
+
+// MU CLT: experiencia passa de 2^31 acima do nivel ~283; troca %d por %u no texto do jogo.
+static const char* ExpFmtUnsigned(const char* fmt)
+{
+    static char out[256];
+    size_t n = 0;
+    for (; fmt && *fmt && n < sizeof(out) - 1; ++fmt) {
+        out[n++] = *fmt;
+        if (fmt[0] == '%' && fmt[1] == 'd' && n < sizeof(out) - 1) { out[n++] = 'u'; ++fmt; }
+    }
+    out[n] = 0;
+    return out;
+}
 extern "C" void __cdecl RenderExperience_(void);
 void RenderExperience_(void)
 {
@@ -655,19 +668,17 @@ void RenderExperience_(void)
 
     if (*(WORD*)((BYTE*)v3 + 0xE) == 0) return;
 
-    int dwPriorExperience = 0;
-    int wPriorLevel = (int)*(unsigned short*)((BYTE*)v3 + 0xE) - 1;
-    if (wPriorLevel > 0) {
-        dwPriorExperience = 10 * wPriorLevel * wPriorLevel * (wPriorLevel + 9);
-        if (wPriorLevel > 255) {
-            int curLvl = (int)*(unsigned short*)((BYTE*)v3 + 0xE);
-            dwPriorExperience += 1000 * (curLvl - 256) * (curLvl - 256) * (curLvl - 256 + 9);
-        }
-    }
-
-    int fNeedExp = *(int*)((BYTE*)v3 + 52) - dwPriorExperience;
-    int fExp     = *(int*)((BYTE*)v3 + 16) - dwPriorExperience;
-    if (fNeedExp <= 0) return;
+    // MU CLT: o servidor (Mu-Linux gObjSetExperienceTable) usa tabela[L] = k*L^3,
+    // nao a formula classica 10*L^2*(L+9), e passa de 2^31 perto do nivel 283.
+    // Valores sem sinal e nivel anterior derivado do proprio Next que o servidor envia.
+    unsigned int curLvl  = *(unsigned short*)((BYTE*)v3 + 0xE);
+    unsigned int nextExp = *(unsigned int*)((BYTE*)v3 + 52);
+    unsigned int curExp  = *(unsigned int*)((BYTE*)v3 + 16);
+    double r = (double)(curLvl - 1) / (double)curLvl;
+    double prevExp  = (double)nextExp * r * r * r;
+    double fNeedExp = (double)nextExp - prevExp;
+    double fExp     = (double)curExp - prevExp;
+    if (fNeedExp <= 0.0) return;
 
     double fExpBarNum = (double)fExp / (double)fNeedExp * 10.0;
     int iExp = (int)fExpBarNum;
@@ -691,9 +702,9 @@ void RenderExperience_(void)
     double my = (double)MouseY;
     if (mx >= 219.0 && mx < 421.0 && my >= 439.0 && my < 445.0) {
         CHAR Buffer[100];
-        Platform::TextFormat(Buffer, GlobalText[357],
-                  *(int*)((BYTE*)v3 + 16),
-                  *(int*)((BYTE*)v3 + 52));
+        Platform::TextFormat(Buffer, ExpFmtUnsigned(GlobalText[357]),
+                  *(unsigned int*)((BYTE*)v3 + 16),
+                  *(unsigned int*)((BYTE*)v3 + 52));
         RenderTipText(223, 424, Buffer);
     }
 
