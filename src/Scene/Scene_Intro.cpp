@@ -172,10 +172,14 @@ void __cdecl Scene_Intro(HDC param_1)
     // Webzen logo — centered
     uStack_4 = 0;
     local_8 = (undefined1 *)gWindow.GetWidth();
-    GL_DrawTexture(0xc,
-        (float)gWindow.GetWidth() * _DAT_00552504 - _DAT_005529bc,
-        (float)gWindow.GetWidth() * _DAT_00552d3c - _DAT_00552d38,
-        256.0f, 195.0f, 0.0f, 0.0f, 1.0f, 0.76171875f, '\0', '\0');
+    // MU CLT: centralizado pela altura real da janela (o original supunha 4:3) e com
+    // 60% da altura da tela. Textura 512x512, logo 512x390 (UV 390/512 = 0.76171875).
+    {
+        const float sw = (float)gWindow.GetWidth(), sh = (float)gWindow.GetHeight();
+        const float lh = sh * 0.6f, lw = lh * (512.0f / 390.0f);
+        GL_DrawTexture(0xc, (sw - lw) * 0.5f, (sh - lh) * 0.5f,
+            lw, lh, 0.0f, 0.0f, 1.0f, 0.76171875f, '\0', '\0');
+    }
 
     // ESRB "Everyone" badge — top right
     uStack_4 = 0;
