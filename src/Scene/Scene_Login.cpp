@@ -221,13 +221,7 @@ uint Scene_Login(void)
     // "Version: %s - by kayito" tomaba basura del stack.  m_ExeVersion es
     // ConfigLoginVersion, que Config_Load llena desde config.ini [LOGIN]/Version;
     // si esa clave no existe queda vacio, que es lo fiel.
-    crt_sprintf(acStack_64, &DAT_07d4b384, ConfigLoginVersion);
-    ptVar10 = &tStack_6c;
-    iVar3   = Platform::TextLength(acStack_64);
-    gFont.MeasureText(gFont.GetTextDC(), acStack_64, iVar3, ptVar10);
-    // IDA 0x521630 L96: esta va en x=0.
-    UI_RenderText(0, 0x1df - (uint)(tStack_6c.cy * 0x280) / gWindow.GetWidth(),
-                 acStack_64, (LPSIZE)0x0, '\0', 0);
+    // MU CLT: a linha "Version: %s - by kayito" nao e mais exibida.
 
     // ── Sub-state dispatch ────────────────────────────────────────────────────
     if (DAT_083a7c14 == 0)

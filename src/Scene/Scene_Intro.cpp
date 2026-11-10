@@ -173,10 +173,10 @@ void __cdecl Scene_Intro(HDC param_1)
     uStack_4 = 0;
     local_8 = (undefined1 *)gWindow.GetWidth();
     // MU CLT: centralizado pela altura real da janela (o original supunha 4:3) e com
-    // 60% da altura da tela. Textura 512x512, logo 512x390 (UV 390/512 = 0.76171875).
+    // 60% da altura da tela, no maximo 390 px (resolucao nativa, sem esticar). Textura 512x512, logo 512x390 (UV 390/512 = 0.76171875).
     {
         const float sw = (float)gWindow.GetWidth(), sh = (float)gWindow.GetHeight();
-        const float lh = sh * 0.6f, lw = lh * (512.0f / 390.0f);
+        const float lh = (sh * 0.6f < 390.0f ? sh * 0.6f : 390.0f), lw = lh * (512.0f / 390.0f);
         GL_DrawTexture(0xc, (sw - lw) * 0.5f, (sh - lh) * 0.5f,
             lw, lh, 0.0f, 0.0f, 1.0f, 0.76171875f, '\0', '\0');
     }
