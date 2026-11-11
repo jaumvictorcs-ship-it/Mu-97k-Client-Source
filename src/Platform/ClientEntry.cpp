@@ -306,11 +306,30 @@ static void DbgLog(const char* msg)
         // Salida a debug.log, con kill-switch si no se puede abrir (bajo debugger se
         // usa OutputDebugStringA, ver abajo).
 #ifdef _WIN32
+        // MU CLT: MuError.log (el que se pide en los tickets).  Al abrir, la sesion
+        // anterior pasa a MuError.old.log en vez de borrarse: si el juego se cerro
+        // solo, el log de la caida sobrevive al reabrir.  Tope de 4 MB por archivo
+        // (rota al pasarlo), asi los dos juntos nunca superan ~8 MB.
         static HANDLE h = INVALID_HANDLE_VALUE;
+        static DWORD  s_written = 0;
+        const DWORD kMaxLog = 4u * 1024u * 1024u;
+        if (h != INVALID_HANDLE_VALUE && s_written + (DWORD)n > kMaxLog) {
+            CloseHandle(h);
+            h = INVALID_HANDLE_VALUE;
+        }
         if (h == INVALID_HANDLE_VALUE) {
-            h = CreateFileA("debug.log", GENERIC_WRITE, FILE_SHARE_READ,
+            MoveFileExA("MuError.log", "MuError.old.log", MOVEFILE_REPLACE_EXISTING);
+            DeleteFileA("debug.log");   // nombre viejo, ya no se usa
+            h = CreateFileA("MuError.log", GENERIC_WRITE, FILE_SHARE_READ,
                             NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
             if (h == INVALID_HANDLE_VALUE) { s_killed = 1; s_inside = false; return; }
+            const auto st = Platform::GetTimer().LocalTime();
+            char head[96];
+            int hn = Platform::TextFormat(head, "==== MU CLT MuError.log %04d-%02d-%02d %02d:%02d:%02d ====\r\n",
+                                          st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+            DWORD hw = 0;
+            if (hn > 0) WriteFile(h, head, hn, &hw, NULL);
+            s_written = hw;
         }
         // El debugger de VS captura las first-chance exceptions ANTES que el SEH del
         // programa, aun con __try/__except: bajo debugger NO se llama WriteFile, solo
@@ -322,9 +341,10 @@ static void DbgLog(const char* msg)
             if (!WriteFile(h, buf, n, &w, NULL)) {
                 s_killed = 1;
             }
+            s_written += w;
         }
 #else
-        static FILE* log = std::fopen("debug.log", "ab");
+        static FILE* log = std::fopen("MuError.log", "ab");
         if (!log || std::fwrite(buf, 1, n, log) != static_cast<size_t>(n)) s_killed = 1;
         if (log) std::fflush(log);
 #endif
@@ -462,6 +482,7 @@ int main(int, char**)
         Platform::GetWindow().ShowError("No se pudo inicializar el diagnóstico de crashes", "Mu Online", false, true);
         return 1;
     }
+    DbgLogPublic("Cliente iniciado");   // MU CLT: garantiza que MuError.log exista desde el arranque
 #if defined(_DEBUG) && defined(_WIN32)
     // DIAG: CRT debug heap con guard bytes. La corrupción se detecta en el
     // siguiente alloc/free que toque el bloque dañado — rápido sin O(n^2) de

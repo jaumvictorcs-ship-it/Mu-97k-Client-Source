@@ -38,6 +38,28 @@ void CMiniDump::Preload()
         }
     }
     if (!s_emergency) s_emergency = malloc(4 * 1024 * 1024);
+
+    // MU CLT: guardar solo los 3 .dmp mas recientes.  El nombre lleva la fecha
+    // (MuClient_AAAA-MM-DD_HHhMMmSSs.dmp), asi que el orden alfabetico es el
+    // cronologico: se borran los primeros hasta que queden 3.
+    static char names[64][MAX_PATH];
+    int count = 0;
+    WIN32_FIND_DATAA fd;
+    HANDLE f = FindFirstFileA("MuClient_*.dmp", &fd);
+    if (f != INVALID_HANDLE_VALUE) {
+        do {
+            if (count < 64) Platform::TextCopy(names[count++], fd.cFileName, MAX_PATH);
+        } while (FindNextFileA(f, &fd));
+        FindClose(f);
+    }
+    for (int i = 1; i < count; ++i)            // insertion sort, como mucho 64
+        for (int j = i; j > 0 && lstrcmpA(names[j - 1], names[j]) > 0; --j) {
+            char tmp[MAX_PATH];
+            Platform::TextCopy(tmp, names[j], MAX_PATH);
+            Platform::TextCopy(names[j], names[j - 1], MAX_PATH);
+            Platform::TextCopy(names[j - 1], tmp, MAX_PATH);
+        }
+    for (int i = 0; i < count - 3; ++i) DeleteFileA(names[i]);
 }
 
 bool CMiniDump::Write(_EXCEPTION_POINTERS* info, char* outPath, unsigned int outPathSize)
