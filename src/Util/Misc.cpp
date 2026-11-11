@@ -47,8 +47,10 @@ bool __cdecl CheckSpecialText(const byte *param_1)
     if (iVar4 == 1) {
       bVar1 = *param_1;
       iVar4 = (int)bVar1;
-      if ((((bVar1 < 0x30) || ((0x39 < bVar1 && (bVar1 < 0x41)))) ||
-          ((0x5a < bVar1 && (bVar1 < 0x61)))) || (0x7a < bVar1)) goto LAB_00406bbe;
+      // MU CLT: mesma lista do DataServer (namechars.patch): _ - . [ ] sao aceitos.
+      const bool allowed = bVar1 == '_' || bVar1 == '-' || bVar1 == '.' || bVar1 == '[' || bVar1 == ']';
+      if (!allowed && ((((bVar1 < 0x30) || ((0x39 < bVar1 && (bVar1 < 0x41)))) ||
+          ((0x5a < bVar1 && (bVar1 < 0x61)))) || (0x7a < bVar1))) goto LAB_00406bbe;
     }
     else {
       bVar1 = *param_1;
