@@ -7,7 +7,8 @@ namespace Platform {
 class Win32Input final : public IInput {
 public:
     bool HasImeModeIndicator() const override { return true; }
-    int16_t KeyState(int key) override { return GetAsyncKeyState(key); }
+    // GetAsyncKeyState le o teclado/mouse do sistema todo: sem foco, teclas e cliques de outros programas viravam acoes no jogo.
+    int16_t KeyState(int key) override { return GetForegroundWindow() == GetWin32Window().GetHwnd() ? GetAsyncKeyState(key) : 0; }
     void CaptureMouse(bool capture) override {
         if (capture) SetCapture(GetWin32Window().GetHwnd());
         else ReleaseCapture();
