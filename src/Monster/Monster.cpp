@@ -709,6 +709,20 @@ void InitializeMonster247(unsigned int c)
     SetCharacterScale((int)c);
 }
 
+// Mu CLT, Aida (162..170): cuerpo de personaje (como 34/247) con set completo.
+// Klass elige el cuerpo: 0 DW, 1 DK, 2 Elf. Level da el brillo del set.
+template <int Set, int Level, int Klass>
+void InitializeAidaWarrior(unsigned int c)
+{
+    static const int parts[5] = { MODEL_HELM, MODEL_ARMOR, MODEL_PANTS, MODEL_GLOVES, MODEL_BOOTS };
+    AsCharacter(c)->Class = (BYTE)Klass;
+    for (int i = 0; i < 5; ++i) {
+        *(unsigned short *)&AsCharacter(c)->BodyPart[i + 1].Type = (unsigned short)(parts[i] + Set);
+        AsCharacter(c)->BodyPart[i + 1].Level = Level;
+    }
+    SetCharacterScale((int)c);
+}
+
 // IDA: CreateMonster (0x0045CCF0), configuración especial del tipo 248.
 void InitializeMonster248(unsigned int c)
 {
@@ -980,6 +994,16 @@ constexpr std::array<MonsterDefinition, 256> MakeMonsterDefinitions()
     definitions[134] = MonsterDefinition(330, SpawnLoader::Monster, 60).WithScale(0.8f).WithInitializer(InitializeMonster131);
     definitions[150] = MonsterDefinition(302, SpawnLoader::Monster, 32).WithScale(0.12f);
     definitions[151] = MonsterDefinition(310, SpawnLoader::Monster, 40).WithScale(1.3f).WithLeft(MODEL_BOW + 14);
+    // Mu CLT, Aida: set (item 7,n) + arma; +9 normales, +11 los de más nivel.
+    definitions[162] = MonsterDefinition(390, SpawnLoader::None).WithRight(MODEL_SWORD + 11, 9).WithInitializer(InitializeAidaWarrior<9, 9, 1>);    // Plate Warrior: Plate
+    definitions[163] = MonsterDefinition(390, SpawnLoader::None).WithRight(MODEL_SWORD + 17, 11).WithInitializer(InitializeAidaWarrior<16, 11, 1>); // Darkness Warrior: Black Dragon +11
+    definitions[164] = MonsterDefinition(390, SpawnLoader::None).WithRight(MODEL_STAFF + 4, 9).WithInitializer(InitializeAidaWarrior<7, 9, 0>);     // Spinx Wizzard: Sphinx
+    definitions[165] = MonsterDefinition(390, SpawnLoader::None).WithRight(MODEL_SWORD + 12, 9).WithInitializer(InitializeAidaWarrior<1, 9, 1>);    // Red Dragon Warrior: Dragon
+    definitions[166] = MonsterDefinition(390, SpawnLoader::None).WithRight(MODEL_SWORD + 16, 9).WithInitializer(InitializeAidaWarrior<16, 9, 1>);   // Black Dragon Knight: Black Dragon
+    definitions[167] = MonsterDefinition(390, SpawnLoader::None).WithRight(MODEL_BOW + 11).WithLeft(MODEL_BOW + 7).WithInitializer(InitializeAidaWarrior<14, 9, 2>); // Guardian Elf: Guardian
+    definitions[168] = MonsterDefinition(390, SpawnLoader::None).WithRight(MODEL_SWORD + 9, 7).WithInitializer(InitializeAidaWarrior<6, 7, 1>);     // Scale Warrior: Scale
+    definitions[169] = MonsterDefinition(390, SpawnLoader::None).WithRight(MODEL_SWORD + 18, 11).WithInitializer(InitializeAidaWarrior<17, 11, 1>); // Phoenix Knight: Dark Phoenix
+    definitions[170] = MonsterDefinition(390, SpawnLoader::None).WithRight(MODEL_STAFF + 5, 11).WithInitializer(InitializeAidaWarrior<18, 11, 0>);  // Soul Master: Grand Soul
     definitions[200] = MonsterDefinition(236, SpawnLoader::None).WithScale(1.8f).WithBlend(2).WithState446(1);
     definitions[230] = MonsterDefinition(336, SpawnLoader::Npc, 336).WithInitializer(InitializeMonster230);
     definitions[231] = MonsterDefinition(377, SpawnLoader::Npc, 377);
