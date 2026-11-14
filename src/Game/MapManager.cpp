@@ -26,7 +26,11 @@ constexpr int kDevias   = 2;
 constexpr int kNoria    = 3;
 constexpr int kDungeon2 = 5;   // el binario le pone la música del Dungeon
 constexpr int kAtlans   = 7;
-constexpr int kMapCount = 17;  // mapas del 0.97k: 0..16 (Blood Castle 1..6 = 11..16)
+// Mapas Mu CLT (assets en Data/World18..20 y Object18..20; el server los lee de Terrain18..20.att).
+constexpr int kKalima    = 17;
+constexpr int kAida      = 18;
+constexpr int kDareDevil = 19;
+constexpr int kMapCount = 20;  // 0..16 del 0.97k (Blood Castle 1..6 = 11..16) + 17..19 Mu CLT
 
 // HeroTile 4 = el piso de la taberna de Lorencia.
 constexpr int kPubTile = 4;
@@ -65,6 +69,11 @@ CMapManager::CMapManager()
     m_Maps[kDungeon2].music = kMusicDungeon;
 
     m_Maps[kAtlans].swimmable = true;
+
+    // GetName cae en GlobalText[map + 40] para 17+, que no tiene estos nombres.
+    m_Maps[kKalima].name    = "Kalima";
+    m_Maps[kAida].name      = "Aida";
+    m_Maps[kDareDevil].name = "Dare Devil";
 
     // Como el MapManager.txt del DLL: minimapa completo en todos los mapas.
     for (int map = 0; map < kMapCount; ++map)
